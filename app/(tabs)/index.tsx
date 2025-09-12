@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
 import { auth, db } from "../firsebaseConfig";
+
 type SignUpFormState = {
   email: string;
   password: string;
@@ -30,7 +31,7 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    if (!signUp.email || !signUp.password || !signUp.nickname) {
+    if (Object.values(signUp).some((value) => value === "")) {
       Alert.alert("회원가입 실패", "모든 필드를 입력해 주세요.");
       return;
     }
