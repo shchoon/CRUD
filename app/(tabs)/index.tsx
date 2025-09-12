@@ -1,98 +1,147 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-export default function HomeScreen() {
+import { auth, db } from "../firsebaseConfig";
+type SignUpFormState = {
+  email: string;
+  password: string;
+  nickname: string;
+};
+
+export default function SignUpScreen() {
+  const [signUp, setSignUp] = useState<SignUpFormState>({
+    email: "",
+    password: "",
+    nickname: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChangeSignUpForm = (
+    key: keyof SignUpFormState,
+    value: string
+  ) => {
+    setSignUp((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleSignUp = async () => {
+    if (!signUp.email || !signUp.password || !signUp.nickname) {
+      Alert.alert("회원가입 실패", "모든 필드를 입력해 주세요.");
+      return;
+    }
+
+    // 최소 비밀번호 길이 검사
+    if (signUp.password.length < 6) {
+      Alert.alert("회원가입 실패", "비밀번호는 최소 6자 이상이어야 합니다.");
+      return;
+    }
+
+    setLoading(true); // 로딩 시작
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        signUp.email,
+        signUp.password
+      );
+
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        nickname: signUp.nickname,
+        createdAt: new Date(),
+      });
+
+      Alert.alert(
+        "회원가입 성공",
+        `${signUp.nickname}님, 가입이 완료되었습니다!`
+      );
+
+      setSignUp({ email: "", password: "", nickname: "" });
+    } catch (error: any) {
+      // 에러 타입 지정
+      let errorMessage = "회원가입에 실패했습니다. 다시 시도해주세요.";
+
+      // Firebase Authentication 에러 코드에 따른 메시지 처리
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          errorMessage = "이미 사용 중인 이메일 주소입니다.";
+          break;
+        case "auth/invalid-email":
+          errorMessage = "유효하지 않은 이메일 주소입니다.";
+          break;
+      }
+      Alert.alert("회원가입 실패", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.title}>회원가입</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TextInput
+        style={styles.input}
+        placeholder="이메일"
+        value={signUp.email}
+        onChangeText={(value) => handleChangeSignUpForm("email", value)}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        editable={!loading} // 로딩 중에는 입력 비활성화
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="비밀번호"
+        value={signUp.password}
+        onChangeText={(value) => handleChangeSignUpForm("password", value)}
+        secureTextEntry
+        editable={!loading}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="닉네임"
+        value={signUp.nickname}
+        onChangeText={(value) => handleChangeSignUpForm("nickname", value)}
+        editable={!loading}
+      />
+
+      <Button
+        title={loading ? "가입 중..." : "회원가입"}
+        onPress={handleSignUp}
+        disabled={loading}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    height: 50,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    borderRadius: 8,
   },
 });
