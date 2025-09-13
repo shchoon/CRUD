@@ -1,9 +1,18 @@
+import { checkEmptyForm } from "@/utils/checkEmptyForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
-import { auth, db } from "../firsebaseConfig";
+import {
+  Alert,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
+import { auth, db } from "../../firebaseConfig";
 
 type LoginForm = {
   email: string;
@@ -26,7 +35,7 @@ export default function Login() {
   };
 
   const login = async () => {
-    if (Object.values(login).some((value) => value === "")) {
+    if (checkEmptyForm(loginForm)) {
       Alert.alert("로그인 실패", "모든 필드를 입력해 주세요.");
       setLoading(false);
       return;
@@ -46,7 +55,10 @@ export default function Login() {
 
       if (userInfo.exists()) {
         const userData = userInfo.data();
-        await AsyncStorage.setItem("user", JSON.stringify(userData));
+        await AsyncStorage.setItem(
+          "user",
+          JSON.stringify({ ...userData, uid: user.uid })
+        );
       }
     } catch (error: any) {
       let errorMessage = "로그인 중 알 수 없는 오류가 발생했습니다.";
@@ -60,14 +72,17 @@ export default function Login() {
             "이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해 주세요.";
       }
       Alert.alert("회원가입 실패", errorMessage);
-
+    } finally {
       setLoading(false);
       setLoginForm({ email: "", password: "" });
     }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <Text style={styles.title}>로그인</Text>
 
       <TextInput
@@ -94,7 +109,7 @@ export default function Login() {
         onPress={login}
         disabled={loading}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

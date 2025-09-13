@@ -1,11 +1,20 @@
+import { checkEmptyForm } from "@/utils/checkEmptyForm";
 import React, { useState } from "react";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
 import { useRouter } from "expo-router";
-import { auth, db } from "../firsebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 
 type SignUpFormState = {
   email: string;
@@ -33,7 +42,7 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    if (Object.values(signUp).some((value) => value === "")) {
+    if (checkEmptyForm(signUp)) {
       Alert.alert("회원가입 실패", "모든 필드를 입력해 주세요.");
       return;
     }
@@ -91,7 +100,10 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <Text style={styles.title}>회원가입</Text>
 
       <TextInput
@@ -126,7 +138,7 @@ export default function SignUpScreen() {
         onPress={handleSignUp}
         disabled={loading}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
