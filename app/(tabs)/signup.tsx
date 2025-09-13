@@ -4,6 +4,7 @@ import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
+import { useRouter } from "expo-router";
 import { auth, db } from "../firsebaseConfig";
 
 type SignUpFormState = {
@@ -13,6 +14,7 @@ type SignUpFormState = {
 };
 
 export default function SignUpScreen() {
+  const router = useRouter();
   const [signUp, setSignUp] = useState<SignUpFormState>({
     email: "",
     password: "",
@@ -61,15 +63,19 @@ export default function SignUpScreen() {
 
       Alert.alert(
         "회원가입 성공",
-        `${signUp.nickname}님, 가입이 완료되었습니다!`
+        `${signUp.nickname}님, 가입이 완료되었습니다!`,
+        [
+          {
+            text: "확인",
+            onPress: () => router.push("/login"),
+          },
+        ]
       );
 
       setSignUp({ email: "", password: "", nickname: "" });
     } catch (error: any) {
-      // 에러 타입 지정
       let errorMessage = "회원가입에 실패했습니다. 다시 시도해주세요.";
 
-      // Firebase Authentication 에러 코드에 따른 메시지 처리
       switch (error.code) {
         case "auth/email-already-in-use":
           errorMessage = "이미 사용 중인 이메일 주소입니다.";

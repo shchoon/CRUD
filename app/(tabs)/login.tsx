@@ -26,13 +26,12 @@ export default function Login() {
   };
 
   const login = async () => {
-    setLoading(true);
-
     if (Object.values(login).some((value) => value === "")) {
-      Alert.alert("회원가입 실패", "모든 필드를 입력해 주세요.");
+      Alert.alert("로그인 실패", "모든 필드를 입력해 주세요.");
       setLoading(false);
       return;
     }
+    setLoading(true);
 
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -50,23 +49,26 @@ export default function Login() {
         await AsyncStorage.setItem("user", JSON.stringify(userData));
       }
     } catch (error: any) {
-      if (error.code === "auth/invalid-login-credentials") {
-        Alert.alert(
-          "로그인 실패",
-          "이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해 주세요."
-        );
-      } else {
-        Alert.alert("오류", "로그인 중 알 수 없는 오류가 발생했습니다.");
-        console.error(error);
+      let errorMessage = "로그인 중 알 수 없는 오류가 발생했습니다.";
+
+      switch (error.code) {
+        case "auth/invalid-email":
+          errorMessage = "유효하지 않은 이메일 주소입니다.";
+          break;
+        case "auth/invalid-credential":
+          errorMessage =
+            "이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해 주세요.";
       }
-    } finally {
+      Alert.alert("회원가입 실패", errorMessage);
+
       setLoading(false);
+      setLoginForm({ email: "", password: "" });
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>회원가입</Text>
+      <Text style={styles.title}>로그인</Text>
 
       <TextInput
         style={styles.input}
@@ -88,7 +90,7 @@ export default function Login() {
       />
 
       <Button
-        title={loading ? "가입 중..." : "회원가입"}
+        title={loading ? "로그인 중..." : "로그인"}
         onPress={login}
         disabled={loading}
       />
