@@ -2,6 +2,7 @@ import { User } from "@/type";
 import { checkEmptyForm } from "@/utils/checkEmptyForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useState } from "react";
@@ -26,6 +27,7 @@ type Form = {
 };
 
 export default function PostForm() {
+  const router = useRouter();
   const [form, setForm] = useState<Form>({
     title: "",
     content: "",
@@ -91,7 +93,15 @@ export default function PostForm() {
         authorUid: user.uid,
         imageUrl: imageUrl,
       });
-      Alert.alert("작성 완료", "글이 성공적으로 등록되었습니다.");
+      Alert.alert("작성 완료", "글이 성공적으로 등록되었습니다.", [
+        {
+          text: "남아있기",
+        },
+        {
+          text: "게시글 보기",
+          onPress: () => router.push("/post"),
+        },
+      ]);
     } catch {
       Alert.alert("다시 시도해주세요");
     } finally {
@@ -136,6 +146,7 @@ export default function PostForm() {
         <Button
           title={loading ? "업로드 중.." : "글쓰기"}
           onPress={handleSubmit}
+          disabled={loading}
         />
       </ScrollView>
     </KeyboardAvoidingView>

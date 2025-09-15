@@ -1,7 +1,8 @@
 import { db } from "@/firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { collection, getDocs } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -29,32 +30,40 @@ export default function PostList() {
   const [posts, setposts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const postsRef = collection(db, "posts");
-        const snapshot = await getDocs(postsRef);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchPosts = async () => {
+        setLoading(true);
+        await new Promise((reslove) => setTimeout(reslove, 1000));
+        try {
+          const postsRef = collection(db, "posts");
+          const q = query(postsRef, orderBy("createdAt", "desc"));
+          const snapshot = await getDocs(q);
 
-        const fetchedPosts: Post[] = [];
+          const fetchedPosts: Post[] = [];
 
-        snapshot.forEach((doc) => {
-          fetchedPosts.push({
-            id: doc.id,
-            ...doc.data(),
-          } as Post);
-        });
+          snapshot.forEach((doc) => {
+            fetchedPosts.push({
+              id: doc.id,
+              ...doc.data(),
+            } as Post);
+          });
 
-        setposts(fetchedPosts);
-      } catch {
-        Alert.alert("게시글을 불러오는 데 실패했습니다.");
-      } finally {
+          setposts(fetchedPosts);
+        } catch {
+          Alert.alert("게시글을 불러오는 데 실패했습니다.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPosts();
+
+      return () => {
         setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, []);
+      };
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -88,7 +97,7 @@ export default function PostList() {
   );
 
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.container}>
       <FlatList
         data={posts}
         renderItem={renderItem}
@@ -105,6 +114,10 @@ export default function PostList() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
   listContainer: {
     flex: 1,
     padding: 10,
