@@ -1,5 +1,6 @@
 import { checkEmptyForm } from "@/utils/checkEmptyForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
@@ -12,7 +13,7 @@ import {
   Text,
   TextInput,
 } from "react-native";
-import { auth, db } from "../../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 
 type LoginForm = {
   email: string;
@@ -20,6 +21,7 @@ type LoginForm = {
 };
 
 export default function Login() {
+  const router = useRouter();
   const [loginForm, setLoginForm] = useState<LoginForm>({
     email: "",
     password: "",
@@ -60,6 +62,8 @@ export default function Login() {
           JSON.stringify({ ...userData, uid: user.uid })
         );
       }
+
+      router.push("/(tabs)/post");
     } catch (error: any) {
       let errorMessage = "로그인 중 알 수 없는 오류가 발생했습니다.";
 

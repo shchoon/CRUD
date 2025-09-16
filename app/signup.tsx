@@ -13,8 +13,8 @@ import {
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
+import { auth, db } from "@/firebaseConfig";
 import { useRouter } from "expo-router";
-import { auth, db } from "../../firebaseConfig";
 
 type SignUpFormState = {
   email: string;

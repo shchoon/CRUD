@@ -114,7 +114,6 @@ export default function PostList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
   },
   listContainer: {
     flexGrow: 1,
