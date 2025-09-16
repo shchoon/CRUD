@@ -12,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Post = {
   id: string;
@@ -78,12 +79,14 @@ export default function PostDetail() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <Comments postId={id as string} post={post} />
-    </KeyboardAvoidingView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <Comments postId={id as string} post={post} />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
