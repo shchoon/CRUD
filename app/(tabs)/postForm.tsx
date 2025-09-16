@@ -79,6 +79,20 @@ export default function PostForm() {
     try {
       const user = await getUserFromAsyncStorage();
 
+      if (!user) {
+        Alert.alert("알림", "게시글을 작성하기 위해서는 로그인이 필요합니다.", [
+          {
+            text: "회원가입",
+            onPress: () => router.push("/signup"),
+          },
+          {
+            text: "로그인",
+            onPress: () => router.push("/login"),
+          },
+        ]);
+        return;
+      }
+
       let imageUrl = null;
       if (form.image) {
         imageUrl = await uploadImage(form.image);
