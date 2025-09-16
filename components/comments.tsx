@@ -1,6 +1,12 @@
 import { db } from "@/firebaseConfig";
 import { getUserFromAsyncStorage } from "@/utils/getUserFromAsyncStorage";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -47,6 +53,8 @@ export default function Comments({ postId, post }: Props) {
         authorId: user.uid,
         createdAt: new Date(),
       });
+
+      fetchComments();
     } catch (error: any) {
       console.log(error);
       Alert.alert("오류", "댓글 등록에 실패했습니다. 다시 시도해주세요.");
@@ -59,9 +67,10 @@ export default function Comments({ postId, post }: Props) {
   const fetchComments = useCallback(() => {
     const getComments = async () => {
       setloading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      //   await new Promise((resolve) => setTimeout(resolve, 1000));
       const commentsDocRef = collection(db, "posts", postId, "comments");
-      const commentsSnap = await getDocs(commentsDocRef);
+      const q = query(commentsDocRef, orderBy("createdAt", "desc"));
+      const commentsSnap = await getDocs(q);
 
       const fetchedComments: Comment[] = [];
       commentsSnap.forEach((doc) => {
@@ -82,7 +91,7 @@ export default function Comments({ postId, post }: Props) {
 
   const renderItem = ({ item }: { item: Comment }) => {
     return (
-      <View style={styles.commentItem} id="renderItem">
+      <View style={styles.commentItem}>
         <Text style={styles.commentAuthor}>{item.author}</Text>
         <Text style={styles.commentText}>{item.text}</Text>
         <Text style={styles.commentDate}>
@@ -94,7 +103,7 @@ export default function Comments({ postId, post }: Props) {
 
   const PostContent = () => {
     return (
-      <View id="postContent" style={{ flex: 1, padding: 12 }}>
+      <View style={{ flex: 1, padding: 12 }}>
         <View style={{ padding: 20 }}>
           <Text style={styles.title}>{post.title}</Text>
           <View style={styles.metaContainer}>
@@ -120,7 +129,6 @@ export default function Comments({ postId, post }: Props) {
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        id="flatList"
         data={comments}
         style={{ flex: 1, backgroundColor: "#fff" }}
         contentContainerStyle={{ flexGrow: 1 }}
