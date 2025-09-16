@@ -8,7 +8,6 @@ import {
   Alert,
   FlatList,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -34,7 +33,7 @@ export default function PostList() {
     useCallback(() => {
       const fetchPosts = async () => {
         setLoading(true);
-        await new Promise((reslove) => setTimeout(reslove, 1000));
+        await new Promise((reslove) => setTimeout(reslove, 300));
         try {
           const postsRef = collection(db, "posts");
           const q = query(postsRef, orderBy("createdAt", "desc"));
@@ -97,19 +96,18 @@ export default function PostList() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <FlatList
-        data={posts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.centered}>
-            <Text>게시글이 없습니다.</Text>
-          </View>
-        }
-      />
-    </ScrollView>
+    <FlatList
+      data={posts}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id}
+      style={styles.container}
+      contentContainerStyle={styles.listContainer}
+      ListEmptyComponent={
+        <View style={styles.centered}>
+          <Text>게시글이 없습니다.</Text>
+        </View>
+      }
+    />
   );
 }
 
@@ -119,7 +117,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   listContainer: {
-    flex: 1,
+    flexGrow: 1,
     padding: 10,
     backgroundColor: "#f0f0f0",
   },
