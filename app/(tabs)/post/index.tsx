@@ -1,4 +1,6 @@
 import { db } from "@/firebaseConfig";
+import { getUserFromAsyncStorage } from "@/utils/getUserFromAsyncStorage";
+import { RouteToAuth } from "@/utils/routeToAuth";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
@@ -13,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Post = {
   id: string;
@@ -64,6 +67,17 @@ export default function PostList() {
     }, [])
   );
 
+  const handleClickItem = async (item: Post) => {
+    const getUser = await getUserFromAsyncStorage();
+
+    if (!getUser) {
+      RouteToAuth(router);
+      return;
+    }
+
+    router.push(`/post/${item.id}`);
+  };
+
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -76,7 +90,7 @@ export default function PostList() {
   const renderItem = ({ item }: { item: Post }) => (
     <TouchableOpacity
       style={styles.postItem}
-      onPress={() => router.push(`/post/${item.id}`)}
+      onPress={() => handleClickItem(item)}
     >
       <Text style={styles.postTitle}>{item.title}</Text>
       <Text style={styles.postContent}>{item.content}</Text>
@@ -96,18 +110,20 @@ export default function PostList() {
   );
 
   return (
-    <FlatList
-      data={posts}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      style={styles.container}
-      contentContainerStyle={styles.listContainer}
-      ListEmptyComponent={
-        <View style={styles.centered}>
-          <Text>게시글이 없습니다.</Text>
-        </View>
-      }
-    />
+    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+      <FlatList
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        style={styles.container}
+        contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <View style={styles.centered}>
+            <Text>게시글이 없습니다.</Text>
+          </View>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
@@ -118,7 +134,7 @@ const styles = StyleSheet.create({
   listContainer: {
     flexGrow: 1,
     padding: 10,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f0f0f5",
   },
   postItem: {
     backgroundColor: "#fff",

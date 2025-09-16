@@ -1,5 +1,6 @@
 import { checkEmptyForm } from "@/utils/checkEmptyForm";
 import { getUserFromAsyncStorage } from "@/utils/getUserFromAsyncStorage";
+import { RouteToAuth } from "@/utils/routeToAuth";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
@@ -77,19 +78,12 @@ export default function PostForm() {
     }
 
     try {
+      setLoading(true);
       const user = await getUserFromAsyncStorage();
 
       if (!user) {
-        Alert.alert("알림", "게시글을 작성하기 위해서는 로그인이 필요합니다.", [
-          {
-            text: "회원가입",
-            onPress: () => router.push("/signup"),
-          },
-          {
-            text: "로그인",
-            onPress: () => router.push("/login"),
-          },
-        ]);
+        // 로그인 or 회원가입 폼으로 이동
+        RouteToAuth(router);
         return;
       }
 
@@ -168,7 +162,7 @@ export default function PostForm() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f0f5",
     flexGrow: 1,
     justifyContent: "center",
   },
@@ -185,6 +179,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 15,
     borderRadius: 8,
+    backgroundColor: "#fff",
   },
   inputContent: {
     height: 200,
@@ -193,6 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     padding: 15,
     borderRadius: 8,
+    backgroundColor: "#fff",
   },
   imagePickerContainer: {
     alignItems: "center",

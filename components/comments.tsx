@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native";
 
-import type { Comment, Post } from "@/type";
+import type { Comment, Post, User } from "@/type";
 import { useFocusEffect } from "@react-navigation/native";
 
 type Props = {
@@ -43,7 +43,7 @@ export default function Comments({ postId, post }: Props) {
     setIsSubmitting(true);
 
     try {
-      const user = await getUserFromAsyncStorage();
+      const user = (await getUserFromAsyncStorage()) as User;
 
       const commentsRef = collection(db, "posts", postId, "comments");
 
@@ -67,7 +67,6 @@ export default function Comments({ postId, post }: Props) {
   const fetchComments = useCallback(() => {
     const getComments = async () => {
       setloading(true);
-      //   await new Promise((resolve) => setTimeout(resolve, 1000));
       const commentsDocRef = collection(db, "posts", postId, "comments");
       const q = query(commentsDocRef, orderBy("createdAt", "desc"));
       const commentsSnap = await getDocs(q);

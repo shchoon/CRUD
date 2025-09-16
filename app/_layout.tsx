@@ -1,7 +1,6 @@
 import { useColorScheme } from "@/hooks/use-color-scheme.web";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 export const unstable_settings = {
@@ -15,11 +14,23 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="signup" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(tabs)"
+          options={{ headerShown: false, statusBarStyle: "dark" }}
+        />
+        <Stack.Screen
+          name="login"
+          options={{ headerShown: false, statusBarStyle: "dark" }}
+        />
+        <Stack.Screen
+          name="signup"
+          options={{ headerShown: false, statusBarStyle: "dark" }}
+        />
+        <Stack.Screen
+          name="post/[id]"
+          options={{ headerShown: false, statusBarStyle: "dark" }}
+        />
       </Stack>
-      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }
