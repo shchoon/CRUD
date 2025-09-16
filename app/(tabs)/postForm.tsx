@@ -1,6 +1,5 @@
-import { User } from "@/type";
 import { checkEmptyForm } from "@/utils/checkEmptyForm";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUserFromAsyncStorage } from "@/utils/getUserFromAsyncStorage";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
@@ -78,8 +77,7 @@ export default function PostForm() {
     }
 
     try {
-      const getUser = (await AsyncStorage.getItem("user")) as string;
-      const user: User = JSON.parse(getUser);
+      const user = await getUserFromAsyncStorage();
 
       let imageUrl = null;
       if (form.image) {

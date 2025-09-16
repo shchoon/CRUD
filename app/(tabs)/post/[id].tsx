@@ -1,3 +1,4 @@
+import Comments from "@/components/comments";
 import { db } from "@/firebaseConfig";
 import { useLocalSearchParams } from "expo-router"; // Expo Router에서 동적 파라미터 가져오기
 import { doc, getDoc } from "firebase/firestore";
@@ -5,8 +6,8 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -30,7 +31,8 @@ export default function PostDetail() {
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) return;
-
+      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 300));
       try {
         const postDocRef = doc(db, "posts", id as string);
         const docSnap = await getDoc(postDocRef);
@@ -76,31 +78,22 @@ export default function PostDetail() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>{post.title}</Text>
-      <View style={styles.metaContainer}>
-        <Text style={styles.author}>작성자: {post.author}</Text>
-        <Text style={styles.date}>
-          {post.createdAt.toDate().toLocaleString()}
-        </Text>
-      </View>
-      {post.imageUrl && (
-        <Image
-          source={{ uri: post.imageUrl }}
-          style={styles.image}
-          resizeMode="contain"
-        />
-      )}
-      <Text style={styles.content}>{post.content}</Text>
-    </ScrollView>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <Comments postId={id as string} post={post} />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   title: {
     fontSize: 26,
